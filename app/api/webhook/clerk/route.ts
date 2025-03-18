@@ -58,22 +58,15 @@ export async function POST(req: Request) {
     const user = {
       clerkId: id,
       email: email_addresses[0].email_address,
-      username: username!,
-      firstName: first_name,
-      lastName: last_name,
-      photo: image_url,
+      username: username ?? email_addresses[0].email_address.split('@')[0],  // Fallback to email prefix if username is null
+      firstName: first_name ?? '',  // Fallback to empty string if null
+      lastName: last_name ?? '',    // Fallback to empty string if null
+      photo: image_url ?? '',       // Fallback to empty string if null
     }
-
+    
     const newUser = await createUser(user);
 
-    if(newUser) {
-      await clerkClient.users.updateUserMetadata(id, {
-        publicMetadata: {
-          userId: newUser._id
-        }
-      })
-    }
-
+   
     return NextResponse.json({ message: 'OK', user: newUser })
   }
 
@@ -81,12 +74,11 @@ export async function POST(req: Request) {
     const {id, image_url, first_name, last_name, username } = evt.data
 
     const user = {
-      firstName: first_name,
-      lastName: last_name,
-      username: username!,
-      photo: image_url,
-    }
-
+      firstName: first_name || 'Unknown',
+      lastName: last_name || 'User',
+      username: username || `user_${id.substring(0, 5)}`,
+      photo: image_url || '',
+    };
     const updatedUser = await updateUser(id, user)
 
     return NextResponse.json({ message: 'OK', user: updatedUser })
